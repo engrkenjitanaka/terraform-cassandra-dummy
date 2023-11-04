@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+sudo apt update -y
+sudo apt upgrade -y
+sudo apt install openjdk-8-jdk -y
+sudo apt install python2 -y
+sudo cp /usr/bin/python2 /usr/bin/python
+
+### UPDATE THE LINK BELOW FOR THE CASSANDRA TO USE ###
+sudo wget https://archive.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra_3.11.4_all.deb
+
+sudo ln -s /dev/null /etc/systemd/system/cassandra.service
+
+### UPDATE THE DEB FILE BELOW IF YOU USED A DIFFERENT CASSANDRA VERSION FROM ABOVE ###
+sudo dpkg --force-all -i cassandra_3.11.4_all.deb
+
+sudo systemctl unmask cassandra.service
+sudo apt-get -f install -y
+
+HOSTNAME="${name}"
+hostnamectl set-hostname $HOSTNAME
+sudo hostnamectl set-hostname $HOSTNAME
+sudo sed -i "s/^127.0.0.1.*/127.0.0.1\t$HOSTNAME/g" /etc/hosts
+sudo echo "alias nodetool='nodetool -h ::FFFF:127.0.0.1'" | sudo tee -a /home/ubuntu/.bashrc
+
+sudo sed -i "s/endpoint_snitch: SimpleSnitch/endpoint_snitch: GossipingPropertyFileSnitch/g" /etc/cassandra/cassandra.yaml
+sudo sed -i "s/seeds: \"127.0.0.1\"/seeds: \"${seeds}\"/g" /etc/cassandra/cassandra.yaml
+sudo sed -i "s/num_tokens: 256/num_tokens: 4/g" /etc/cassandra/cassandra.yaml
+sudo sed -i "s/listen_address: localhost/listen_address: ${instance_ip}/g" /etc/cassandra/cassandra.yaml
+sudo sed -i "s/rpc_address: localhost/rpc_address: ${instance_ip}/g" /etc/cassandra/cassandra.yaml
+sudo sed -i "s/dc=dc1/dc=${dc}/g" /etc/cassandra/cassandra-rackdc.properties
+sudo sed -i "s/rack=rack1/rack=${rack}/g" /etc/cassandra/cassandra-rackdc.properties
