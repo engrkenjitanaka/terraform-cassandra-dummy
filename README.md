@@ -1,4 +1,6 @@
-# Creating a dummy Cassandra DC with Terraform
+# Creating a dummy Cassandra cluster with Terraform
+
+A simple Terraform script to spin up a dummy Cassandra cluster for testing purposes :)
 
 CAVEATS:
 ```
